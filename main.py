@@ -7,9 +7,9 @@ import numpy as np
 # set area detection
 ZONE_POLYGON = np.array([
   [0,0], # top left point
-  [1280//4,0], # top right point
-  [1250//4,720], # bottom right point
-  [0, 720] # bottom left point
+  [0.5,0], # top right point
+  [0.5,1], # bottom right point
+  [0, 1] # bottom left point
 ])
 
 # Set frame resolution
@@ -17,7 +17,7 @@ def parse_arguments() -> argparse.Namespace:
   parser = argparse.ArgumentParser(description="YOLOv8 live")
   parser.add_argument(
     "--webcam-resolution", #argument name
-    default=[1280,720], #default resolution
+    default=[640,480], #default resolution
     nargs=2, #argument count
     type=int #argument type
   )
@@ -44,9 +44,12 @@ def main():
     text_scale=1
   )
 
+  # set zone relative w frame 
+  zone_polygon = (ZONE_POLYGON * np.array(args.webcam_resolution)).astype(int)
+
   # set polygon zone w supervision
   zone = sv.PolygonZone(
-    polygon=ZONE_POLYGON, # set polygon point
+    polygon=zone_polygon, # set polygon point
     frame_resolution_wh=tuple(args.webcam_resolution)
   )
   # define zone
@@ -64,7 +67,7 @@ def main():
     _, frame = cap.read()
 
     # result of model execution with frame --> store in list
-    result = model(frame, agnostic_nms=True)[0] # print to show class object // agnostic = get rid an object when 2 object oscillating
+    result = model(frame, agnostic_nms=True)[0] # print to show class object // agnostic = prevent double detection by get rid an object when 2 object oscillating
     detections = sv.Detections.from_yolov8(result)
     detections = detections[detections.class_id == 0] # only person detections >>> class_id == 0 (person)
     # print(detections[:5])
