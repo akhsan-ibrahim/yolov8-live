@@ -64,7 +64,7 @@ def main():
     _, frame = cap.read()
 
     # result of model execution with frame --> store in list
-    result = model(frame)[0] # print to show class object
+    result = model(frame, agnostic_nms=True)[0] # print to show class object // agnostic = get rid an object when 2 object oscillating
     detections = sv.Detections.from_yolov8(result)
     detections = detections[detections.class_id == 0] # only person detections >>> class_id == 0 (person)
     # print(detections[:5])
